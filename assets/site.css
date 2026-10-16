@@ -175,7 +175,21 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .admission-documents p, .admission-requests p { font-size: calc(.9rem * var(--reading-scale, 1)); }
 .admission-documents .context-note, .admission-requests .context-note { font-size: calc(.75rem * var(--reading-scale, 1)); }
 
-.convocation-sample, .convocation-summary { background: var(--panel-detail); border-radius: .65rem; margin-top: .8rem; }
+.convocation-sample, .convocation-summary, .convocation-history, .convocation-unrecorded { background: var(--panel-detail); border-radius: .65rem; margin-top: .8rem; }
+.convocation-history-list { list-style: none; padding: 0; margin: 1rem 0 .25rem; }
+.convocation-history-list li { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: .75rem; padding: 0 0 1rem; }
+.convocation-history-list li:last-child { padding-bottom: .25rem; }
+.history-index { display: grid; place-items: center; align-self: start; width: 2.2rem; height: 2.2rem; border: 1px solid var(--rule); border-radius: 50%; color: var(--muted); font: 600 .8rem system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.history-event { display: flex; flex-direction: column; gap: .2rem; border-bottom: 1px solid var(--rule); padding-bottom: 1rem; }
+.convocation-history-list li:last-child .history-event { border-bottom: 0; padding-bottom: 0; }
+.history-label { color: var(--muted); font-size: calc(.72rem * var(--reading-scale, 1)); }
+.history-event time { font-size: calc(.95rem * var(--reading-scale, 1)); }
+.history-gap { color: var(--muted); font: 500 calc(.75rem * var(--reading-scale, 1)) system-ui, sans-serif; }
+.occupation-group { margin-top: 1.25rem; }
+.occupation-group h3 { font-size: calc(.85rem * var(--reading-scale, 1)); margin-bottom: .65rem; }
+.occupation-count { color: var(--muted); font-weight: 400; }
+.occupation-list { margin: 0; padding-left: 1.2rem; font-size: calc(.8rem * var(--reading-scale, 1)); }
+.occupation-list li { margin-bottom: .4rem; overflow-wrap: anywhere; }
 .convocation-table-scroll { max-width: 100%; overflow-x: auto; margin-top: .85rem; }
 .convocation-table-scroll:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .convocation-table { border-collapse: collapse; width: 100%; min-width: 0; table-layout: fixed; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.78rem * var(--reading-scale, 1)); line-height: 1.45; }
@@ -203,7 +217,7 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .situation-eliminado { --situation-bg: var(--eliminado-bg); --situation-fg: var(--eliminado-fg); }
 .convocation-counts tfoot th, .convocation-counts tfoot td { border-top: 2px solid var(--rule); font-weight: 700; }
 @media (max-width: 25rem) {
-  .convocation-sample, .convocation-summary { --disclosure-block: .65rem; --disclosure-inline: .45rem; }
+  .convocation-sample, .convocation-summary, .convocation-history, .convocation-unrecorded { --disclosure-block: .65rem; --disclosure-inline: .45rem; }
   .convocation-table { font-size: calc(.73rem * var(--reading-scale, 1)); }
   .convocation-table th, .convocation-table td { padding: .45rem .2rem; }
 }
