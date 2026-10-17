@@ -125,3 +125,23 @@
     actions.hidden = false;
   }
 })();
+
+// A contribution belongs to its case, never to the home page.
+for (const button of document.querySelectorAll(".pix-copy")) {
+  const container = button.closest(".contribution");
+  const status = container.querySelector(".pix-status");
+  container.hidden = false;
+  button.addEventListener("click", async () => {
+    status.textContent = "";
+    button.disabled = true;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(button.dataset.pixKey);
+      status.textContent = "Chave Pix copiada";
+    } catch {
+      status.textContent = "Não foi possível copiar a chave Pix. Tente novamente.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+}

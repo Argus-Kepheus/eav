@@ -242,6 +242,11 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .checklist-count { font-size: calc(.78rem * var(--reading-scale, 1)); }
 .checklist-download { cursor: pointer; font-family: inherit; }
 .edital-terms { margin: 0; }
+.contribution { margin: .75rem 0 0; }
+.contribution[hidden] { display: none; }
+.pix-copy { font: inherit; color: var(--accent); background: transparent; border: 0; padding: .25rem; text-decoration: underline; cursor: pointer; }
+.pix-copy:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.pix-status { display: block; margin-top: .35rem; }
 .edital-terms > div + div { margin-top: .8rem; }
 @media print {
   .checklist-actions, .service-links { display: none; }
