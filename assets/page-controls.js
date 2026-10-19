@@ -80,6 +80,45 @@
   document.addEventListener("toggle", updateTop, true);
   updateTop();
 
+  // Measure the actual headings so wrapped text and the font slider cannot make
+  // the sticky section and disclosure titles overlap.
+  for (const section of document.querySelectorAll(".reading-sections > section")) {
+    const heading = section.querySelector(":scope > h2");
+    if (!heading) continue;
+    const disclosures = [...section.querySelectorAll("details")].map(details => ({
+      details, summary: details.querySelector(":scope > summary"),
+    })).filter(item => item.summary);
+    const measure = () => {
+      section.style.setProperty("--section-header-height", `${Math.ceil(heading.getBoundingClientRect().height)}px`);
+      for (const { details, summary } of disclosures) {
+        details.style.setProperty("--disclosure-header-height", `${Math.ceil(summary.getBoundingClientRect().height)}px`);
+      }
+    };
+    if (typeof window.ResizeObserver === "function") {
+      const observer = new window.ResizeObserver(measure);
+      observer.observe(heading);
+      for (const { summary } of disclosures) observer.observe(summary);
+    }
+    window.addEventListener("resize", measure);
+    if (fontSlider) fontSlider.addEventListener("input", measure);
+    for (const { details, summary } of disclosures) {
+      let restorePosition = false;
+      summary.addEventListener("click", () => {
+        const bounds = summary.getBoundingClientRect();
+        restorePosition = details.open && bounds.top <= heading.getBoundingClientRect().height + 1 && bounds.bottom > 0;
+      });
+      details.addEventListener("toggle", () => {
+        measure();
+        if (!details.open && restorePosition) {
+          summary.scrollIntoView({ block: "start", behavior: "auto" });
+          summary.focus({ preventScroll: true });
+        }
+        restorePosition = false;
+      });
+    }
+    measure();
+  }
+
   // Document checklists: ticks stay on this device (localStorage, when available)
   // and the list can be saved as a plain-text file. Item text is read with
   // textContent and written only to that file, never back into the page.
