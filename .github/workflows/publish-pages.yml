@@ -1,0 +1,100 @@
+name: Publicar EAV
+run-name: Publicar a versão atual de datalog/main
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eav-pages-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Argus-Kepheus/eav' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Obter o repositório público
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: public
+
+      - name: Obter a versão atual do datalog
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Argus-Kepheus/datalog
+          ref: main
+          path: source
+          ssh-key: ${{ secrets.DATALOG_READ_KEY }}
+          persist-credentials: false
+
+      - name: Identificar o commit do fonte
+        id: source
+        run: echo "sha=$(git -C source rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/web/v01/package-lock.json
+
+      - name: Conferir a política de execução manual
+        run: python3 source/tools/governance/validate-actions-manual-only.py
+
+      - name: Instalar dependências
+        working-directory: source/web/v01
+        run: npm ci --no-audit --no-fund
+
+      - name: Validar conteúdo, gerar o site e executar os testes
+        working-directory: source/web/v01
+        run: npm run check
+
+      - name: Preparar somente os arquivos públicos
+        env:
+          EAV_SOURCE_COMMIT: ${{ steps.source.outputs.sha }}
+          EAV_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node source/web/v01/scripts/prepare-pages-release.mjs public _site
+
+      - name: Registrar a versão gerada no repositório público
+        working-directory: public
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish EAV from datalog ${SOURCE_SHA}"
+            git push origin HEAD:main
+          fi
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Enviar o artefato estático
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - name: Publicar a nova versão
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+      - name: Registrar o resultado
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          printf 'Fonte: `%s`\n\nSite: %s\n' "$SOURCE_SHA" "$SITE_URL" >> "$GITHUB_STEP_SUMMARY"
