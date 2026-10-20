@@ -88,10 +88,20 @@
     const disclosures = [...section.querySelectorAll("details")].map(details => ({
       details, summary: details.querySelector(":scope > summary"),
     })).filter(item => item.summary);
+    const measured = new Map();
     const measure = () => {
-      section.style.setProperty("--section-header-height", `${Math.ceil(heading.getBoundingClientRect().height)}px`);
+      const headingHeight = Math.ceil(heading.getBoundingClientRect().height);
+      section.style.setProperty("--section-header-height", `${headingHeight}px`);
+      section.style.setProperty("--nested-disclosure-position", "sticky");
       for (const { details, summary } of disclosures) {
-        details.style.setProperty("--disclosure-header-height", `${Math.ceil(summary.getBoundingClientRect().height)}px`);
+        const parent = measured.get(details.parentElement?.closest("details"));
+        const top = parent ? parent.top + parent.height : headingHeight;
+        const depth = parent ? parent.depth + 1 : 0;
+        const height = Math.ceil(summary.getBoundingClientRect().height);
+        measured.set(details, { top, depth, height });
+        details.style.setProperty("--disclosure-header-height", `${height}px`);
+        details.style.setProperty("--disclosure-top", `${top}px`);
+        details.style.setProperty("--disclosure-layer", String(Math.max(1, 5 - depth)));
       }
     };
     if (typeof window.ResizeObserver === "function") {
@@ -105,7 +115,7 @@
       let restorePosition = false;
       summary.addEventListener("click", () => {
         const bounds = summary.getBoundingClientRect();
-        restorePosition = details.open && bounds.top <= heading.getBoundingClientRect().height + 1 && bounds.bottom > 0;
+        restorePosition = details.open && bounds.top <= measured.get(details).top + 1 && bounds.bottom > 0;
       });
       details.addEventListener("toggle", () => {
         measure();

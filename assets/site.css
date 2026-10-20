@@ -154,7 +154,6 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
   .font-size-control { gap: 4px; padding-inline: 6px; }
   .font-size-control label { display: none; }
 }
-
 .page-intro, .home-cases, .current-summary, .snapshot-summary, .essentials, .more-information { background: var(--panel); border-radius: 1rem; padding: 1.1rem 1.25rem; }
 .page-intro > :last-child { margin-bottom: 0; }
 .more-information { --disclosure-block: 1.1rem; --disclosure-inline: 1.25rem; padding: var(--disclosure-block) var(--disclosure-inline); }
@@ -168,13 +167,14 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 
 .channel-list { margin: .9rem 0 0; }
 .channel-list > div { background: var(--panel-detail); border-radius: .65rem; padding: .8rem; margin-top: .6rem; }
+.channel-list dd > a { display: block; }
+.channel-list dd > a + a { margin-top: .25rem; }
 .channel-phones { list-style: none; padding: 0; margin: .5rem 0 0; }
 .channel-phones li + li { margin-top: .25rem; }
 
 .admission-documents, .admission-requests { background: var(--panel-detail); border-radius: .65rem; margin-top: .6rem; }
 .admission-documents p, .admission-requests p { font-size: calc(.9rem * var(--reading-scale, 1)); }
 .admission-documents .context-note, .admission-requests .context-note { font-size: calc(.75rem * var(--reading-scale, 1)); }
-
 .convocation-sample, .convocation-summary, .convocation-history, .convocation-unrecorded { background: var(--panel-detail); border-radius: .65rem; margin-top: .8rem; }
 .convocation-history-list { list-style: none; padding: 0; margin: 1rem 0 .25rem; }
 .convocation-history-list li { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: .75rem; padding: 0 0 1rem; }
@@ -185,11 +185,19 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .history-label { color: var(--muted); font-size: calc(.72rem * var(--reading-scale, 1)); }
 .history-event time { font-size: calc(.95rem * var(--reading-scale, 1)); }
 .history-gap { color: var(--muted); font: 500 calc(.75rem * var(--reading-scale, 1)) system-ui, sans-serif; }
-.occupation-group { margin-top: 1.25rem; }
-.occupation-group h3 { font-size: calc(.85rem * var(--reading-scale, 1)); margin-bottom: .65rem; }
+.occupation-group { margin-top: .85rem; border: 1px solid var(--rule); border-radius: .5rem; }
+.occupation-group > summary { font-size: calc(.85rem * var(--reading-scale, 1)); }
 .occupation-count { color: var(--muted); font-weight: 400; }
-.occupation-list { margin: 0; padding-left: 1.2rem; font-size: calc(.8rem * var(--reading-scale, 1)); }
-.occupation-list li { margin-bottom: .4rem; overflow-wrap: anywhere; }
+.occupation-list { list-style: none; margin: .35rem 0 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.8rem * var(--reading-scale, 1)); font-weight: 400; line-height: 1.5; }
+.occupation-list > li { padding: .5rem 0; overflow-wrap: anywhere; }
+.occupation-list > li + li { border-top: 1px solid var(--rule); }
+.occupation-family { --disclosure-block: .4rem; --disclosure-inline: 0rem; padding-bottom: 0; }
+.occupation-family > summary { font: inherit; list-style: none; }
+.occupation-family > summary::-webkit-details-marker { display: none; }
+.occupation-family > summary::after { content: ""; display: inline-block; margin-inline-start: .5em; border-block: .28em solid transparent; border-inline-start: .45em solid currentColor; vertical-align: middle; }
+.occupation-family[open] > summary::after { transform: rotate(90deg); }
+.occupation-specialties { margin: .4rem 0 0; padding-left: 1.3rem; }
+.occupation-specialties > li { padding: .3rem 0; overflow-wrap: anywhere; }
 .convocation-table-scroll { max-width: 100%; overflow-x: auto; margin-top: .85rem; }
 .convocation-table-scroll:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .convocation-table { border-collapse: collapse; width: 100%; min-width: 0; table-layout: fixed; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.78rem * var(--reading-scale, 1)); line-height: 1.45; }
@@ -221,8 +229,6 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
   .convocation-table { font-size: calc(.73rem * var(--reading-scale, 1)); }
   .convocation-table th, .convocation-table td { padding: .45rem .2rem; }
 }
-
-
 .admission-requests > summary { font-size: calc(.86rem * var(--reading-scale, 1)); }
 .admission-requests h3 { margin: 1rem 0 .4rem; }
 .additional-requirements { font-size: calc(.9rem * var(--reading-scale, 1)); padding-left: 1.2rem; margin: .55rem 0 .85rem; }
@@ -249,17 +255,17 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .pix-status { display: block; margin-top: .35rem; }
 .edital-terms > div + div { margin-top: .8rem; }
 .reading-sections > section { --section-inline: 1.25rem; --section-block: 1.1rem; --section-header-height: calc(1.7rem + 1.23rem * var(--reading-scale, 1)); }
-.reading-sections > section > h2 { position: sticky; top: 0; z-index: 4; margin: calc(-1 * var(--section-block)) calc(-1 * var(--section-inline)) .65rem; padding: .85rem var(--section-inline); background: var(--panel); border-radius: 1rem 1rem 0 0; box-shadow: 0 1px 0 var(--rule); }
+.reading-sections > section > h2 { position: sticky; top: 0; z-index: 6; margin: calc(-1 * var(--section-block)) calc(-1 * var(--section-inline)) .65rem; padding: .85rem var(--section-inline); background: var(--panel); border-radius: 1rem 1rem 0 0; box-shadow: 0 1px 0 var(--rule); }
 .reading-sections details { --disclosure-header-height: calc(2 * var(--disclosure-block) + .4rem + 1.275rem * var(--reading-scale, 1)); }
-.reading-sections details > summary { line-height: 1.5; scroll-margin-top: calc(var(--section-header-height, 0px) + .5rem); }
-.reading-sections details[open] > summary { position: sticky; top: var(--section-header-height, 0px); z-index: 3; padding-block: calc(var(--disclosure-block) + .2rem); background: var(--panel-detail); border-radius: .65rem .65rem 0 0; box-shadow: 0 1px 0 var(--rule); }
+.reading-sections details > summary { line-height: 1.5; scroll-margin-top: calc(var(--disclosure-top, var(--section-header-height, 0px)) + .5rem); }
+.reading-sections details[open] > summary { position: sticky; top: var(--disclosure-top, var(--section-header-height, 0px)); z-index: var(--disclosure-layer, 5); padding-block: calc(var(--disclosure-block) + .2rem); background: var(--panel-detail); border-radius: .65rem .65rem 0 0; box-shadow: 0 1px 0 var(--rule); }
+.reading-sections :is(.occupation-group, .occupation-family)[open] > summary { position: var(--nested-disclosure-position, static); }
 .reading-sections > details[open] > summary { top: 0; background: var(--panel); border-radius: 1rem 1rem 0 0; }
-.reading-sections .occupation-group > h3 { position: sticky; top: calc(var(--section-header-height, 0px) + var(--disclosure-header-height, 0px)); z-index: 2; margin-inline: calc(-1 * var(--disclosure-inline)); padding: .35rem var(--disclosure-inline) .55rem; background: var(--panel-detail); box-shadow: 0 1px 0 var(--rule); }
 .reading-sections :is(a, button, input, [tabindex]) { scroll-margin-top: calc(var(--section-header-height, 0px) + var(--disclosure-header-height, 0px) + 1rem); }
 @media (max-width: 25rem) {
   .reading-sections > section { --section-inline: 1rem; --section-block: 1rem; }
 }
 @media print {
   .checklist-actions, .service-links { display: none; }
-  .reading-sections > section > h2, .reading-sections details[open] > summary, .reading-sections .occupation-group > h3 { position: static; box-shadow: none; }
+  .reading-sections > section > h2, .reading-sections details[open] > summary { position: static; box-shadow: none; }
 }
