@@ -200,13 +200,12 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .occupation-specialties > li { padding: .3rem 0; overflow-wrap: anywhere; }
 .convocation-table-scroll { max-width: 100%; overflow-x: auto; margin-top: .85rem; }
 .convocation-table-scroll:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
-.convocation-table { border-collapse: collapse; width: 100%; min-width: 0; table-layout: fixed; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.78rem * var(--reading-scale, 1)); line-height: 1.45; }
-.convocation-table th, .convocation-table td { padding: .55rem .45rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
+.convocation-table { border-collapse: collapse; width: 100%; min-width: 24em; table-layout: fixed; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.78rem * var(--reading-scale, 1)); line-height: 1.45; }
+.convocation-table th, .convocation-table td { padding: .5rem .3rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); overflow-wrap: normal; hyphens: none; }
 .convocation-table th { color: var(--muted); font-weight: 650; }
 .context-facts { margin: .8rem 0 1rem; }
 
 
-.convocation-table th, .convocation-table td { overflow-wrap: anywhere; hyphens: auto; padding: .5rem .3rem; }
 .convocation-table thead th:first-child { width: 38%; }
 .convocation-table thead th:nth-child(2) { width: 30%; }
 .convocation-table thead th:nth-child(3) { width: 32%; }
@@ -217,17 +216,37 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .convocation-groups tbody th { color: var(--ink); font-weight: 600; }
 .convocation-groups tbody td, .convocation-groups tbody th { border-bottom: 0; }
 .convocation-groups tbody:last-of-type { border-bottom: 2px solid var(--muted); }
-.situation { display: inline-block; padding: .1rem .35rem; border-radius: .35rem; font-weight: 600; line-height: 1.35; background: var(--situation-bg); color: var(--situation-fg); }
+.situation { display: inline-block; padding: .1rem .35rem; border-radius: .35rem; font-weight: 600; line-height: 1.35; white-space: nowrap; background: var(--situation-bg); color: var(--situation-fg); }
 .situation-convocado { --situation-bg: var(--convocado-bg); --situation-fg: var(--convocado-fg); }
 .situation-admitido { --situation-bg: var(--admitido-bg); --situation-fg: var(--admitido-fg); }
 .situation-desistente { --situation-bg: var(--desistente-bg); --situation-fg: var(--desistente-fg); }
 .situation-final-de-fila { --situation-bg: var(--final-bg); --situation-fg: var(--final-fg); }
 .situation-eliminado { --situation-bg: var(--eliminado-bg); --situation-fg: var(--eliminado-fg); }
 .convocation-counts tfoot th, .convocation-counts tfoot td { border-top: 2px solid var(--rule); font-weight: 700; }
+.occupation-search { margin-block: 1rem; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: calc(.85rem * var(--reading-scale, 1)); }
+.occupation-search > label { display: grid; gap: .4rem; font-weight: 600; }
+.occupation-search-input { box-sizing: border-box; width: 100%; padding: .65rem .75rem; border: 1px solid var(--muted); border-radius: .45rem; background: var(--panel-detail); color: var(--ink); font: inherit; }
+.occupation-search-input:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+.occupation-search-results { list-style: none; padding: 0; margin-block: .65rem; }
+.occupation-search-results > li { padding: .65rem 0; border-bottom: 1px solid var(--rule); }
+.occupation-search-results > li > span { display: block; margin-top: .2rem; color: var(--muted); font-size: .85em; }
+.occupation-target { scroll-margin-top: 10rem; }
+.occupation-target:focus { outline: 3px solid var(--link); outline-offset: 2px; }
+.provenance-note { color: var(--muted); font-size: .8em; font-weight: 400; }
+.history-event .provenance-note time { font: inherit; }
+@media (max-width: 40rem) {
+  .convocation-table thead th:first-child { width: 35%; }
+  .convocation-table thead th:nth-child(2) { width: 31%; }
+  .convocation-table thead th:nth-child(3) { width: 34%; }
+}
 @media (max-width: 25rem) {
   .convocation-sample, .convocation-summary, .convocation-history, .convocation-unrecorded { --disclosure-block: .65rem; --disclosure-inline: .45rem; }
-  .convocation-table { font-size: calc(.73rem * var(--reading-scale, 1)); }
   .convocation-table th, .convocation-table td { padding: .45rem .2rem; }
+}
+@media print {
+  .convocation-table-scroll { overflow: visible; }
+  .convocation-table { min-width: 0; }
+  .table-scroll-hint { display: none; }
 }
 .admission-requests > summary { font-size: calc(.86rem * var(--reading-scale, 1)); }
 .admission-requests h3 { margin: 1rem 0 .4rem; }
@@ -254,6 +273,8 @@ details[open] > summary { padding-bottom: .2rem; margin-bottom: .8rem; }
 .pix-copy:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .pix-status { display: block; margin-top: .35rem; }
 .edital-terms > div + div { margin-top: .8rem; }
+.checklist-group { margin-top: 1rem; }
+.checklist-group > h3 { font-size: 1em; margin-block: .7rem .5rem; }
 .reading-sections > section { --section-inline: 1.25rem; --section-block: 1.1rem; --section-header-height: calc(1.7rem + 1.23rem * var(--reading-scale, 1)); }
 .reading-sections > section > h2 { position: sticky; top: 0; z-index: 6; margin: calc(-1 * var(--section-block)) calc(-1 * var(--section-inline)) .65rem; padding: .85rem var(--section-inline); background: var(--panel); border-radius: 1rem 1rem 0 0; box-shadow: 0 1px 0 var(--rule); }
 .reading-sections details { --disclosure-header-height: calc(2 * var(--disclosure-block) + .4rem + 1.275rem * var(--reading-scale, 1)); }
