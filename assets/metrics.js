@@ -1,7 +1,7 @@
-// Cloudflare Web Analytics is independent of the estimated contest-visit counter.
+// Cloudflare Web Analytics is independent of the estimated per-page counter.
 (() => {
   "use strict";
-  const settings = {"productionOrigin":"https://eav.arguskepheus.com.br","counterEndpoint":"https://eav-visits.sergio-cordero-calvimontes.workers.dev/api/v2/contest-visits","webAnalyticsToken":"7b4a641694a9414c8621199ae8fbdf1e","contests":[{"caseId":"concurso-emgepron-01-2026","id":"emgepron-01-2026","path":"/concursos/emgepron/01-2026/"}]};
+  const settings = {"productionOrigin":"https://eav.arguskepheus.com.br","counterEndpoint":"https://eav-visits.sergio-cordero-calvimontes.workers.dev/api/v2/contest-visits","webAnalyticsToken":"7b4a641694a9414c8621199ae8fbdf1e","pages":[{"id":"home","path":"/"},{"id":"not-found","path":"/404.html"}],"contests":[{"caseId":"concurso-emgepron-01-2026","id":"emgepron-01-2026","path":"/concursos/emgepron/01-2026/"},{"caseId":"concurso-transpetro-2026","id":"transpetro-2026","path":"/concursos/transpetro/"},{"caseId":"concurso-inb-2026","id":"inb-2026","path":"/concursos/inb/"},{"caseId":"concurso-dataprev-2026","id":"dataprev-2026","path":"/concursos/dataprev/"},{"caseId":"concurso-cremerj-2026","id":"cremerj-2026","path":"/concursos/cremerj/"},{"caseId":"concurso-itaipu-1011-2023","id":"itaipu-1011-2023","path":"/concursos/itaipu/1011-2023/"}]};
   if (!settings) return;
   const { protocol, hostname, pathname } = window.location;
   const origin = window.location.origin || protocol + "//" + hostname;
@@ -17,12 +17,16 @@
     document.head.appendChild(beacon);
   }
 
-  // Deliberately explicit: public visitors cannot create contest identities.
+  // Deliberately explicit: public visitors cannot create counter identities.
   // config/metrics.json supplies both this routing table and the Worker's allowlist.
-  const contest = settings.contests.find(item => item.path === pathname)?.id;
-  if (!contest || typeof window.fetch !== "function") return;
   const slot = document.querySelector("[data-eav-visits]");
-  if (!slot) return;
+  if (!slot || typeof window.fetch !== "function") return;
+  const counter = [...settings.contests, ...settings.pages].find(item => item.path === pathname)
+    // GitHub Pages serves 404.html at the unrecognized URL; aggregate only its
+    // explicit footer slot, never manufacture a counter for the requested path.
+    ?? settings.pages.find(item => item.path === "/404.html" && item.id === slot.dataset?.eavVisits);
+  if (!counter) return;
+  const contest = counter.id; // Stable v2 API/storage field, including non-contest pages.
   const endpoint = settings.counterEndpoint;
   const TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -140,7 +144,9 @@
       if (!response.ok) return;
       const result = await response.json();
       if (result?.contest !== contest || !Number.isSafeInteger(result.visits) || result.visits < 0) return;
-      slot.textContent = " · Visitas estimadas: " + result.visits.toLocaleString("pt-BR");
+      const total = result.visits.toLocaleString("pt-BR");
+      // Older cached EMGEPRON HTML has a hidden, empty slot without its own ID.
+      slot.textContent = slot.dataset?.eavVisits ? total : " · Visitas estimadas: " + total;
       slot.hidden = false;
     } catch { /* Counter failure never affects the editorial page. */ }
   })();

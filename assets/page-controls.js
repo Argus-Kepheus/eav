@@ -160,65 +160,117 @@
     }
   }
 
-  function initOccupationSearch() {
-    const searches = [...document.querySelectorAll(".occupation-search")];
-    if (!searches.length) return;
-    const normalize = text => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
-    const reveal = (id, focus) => {
-      const target = document.getElementById(id);
-      if (!target?.hasAttribute("data-occupation-target")) return;
-      let parent = target.parentElement;
-      while (parent) {
-        if (parent.tagName === "DETAILS") parent.open = true;
-        parent = parent.parentElement;
+  function revealEntity(id, focus) {
+    const target = document.getElementById(id);
+    if (!target || (!target.hasAttribute("data-occupation-target") && !target.hasAttribute("data-section-target"))) return;
+    let parent = target.parentElement;
+    while (parent) {
+      if (parent.tagName === "DETAILS") parent.open = true;
+      parent = parent.parentElement;
+    }
+    const position = () => {
+      if (focus) {
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+        target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
       }
-      const position = () => {
-        if (focus) {
-          target.setAttribute("tabindex", "-1");
-          target.focus({ preventScroll: true });
-          target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
+      const name = target.querySelector?.(".occupation-name") ?? target;
+      name.scrollIntoView({ block: "center", inline: "start", behavior: "auto" });
+      // At large reading sizes the stacked titles can extend below the centre
+      // of the screen. Keep the destination's name below its sticky ancestors.
+      if (typeof window.getComputedStyle === "function" && typeof window.scrollBy === "function") {
+        let ancestor = target.parentElement, bottom = 0;
+        while (ancestor) {
+          const heading = ancestor.tagName === "DETAILS" ? ancestor.querySelector(":scope > summary")
+            : ancestor.tagName === "SECTION" ? ancestor.querySelector(":scope > h2") : null;
+          if (heading && window.getComputedStyle(heading).position === "sticky") bottom = Math.max(bottom, heading.getBoundingClientRect().bottom);
+          ancestor = ancestor.parentElement;
         }
-        target.scrollIntoView({ block: "center", inline: "start", behavior: "auto" });
-      };
-      if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(position);
-      else position();
+        const adjustment = name.getBoundingClientRect().top - bottom - 12;
+        if (adjustment < 0) window.scrollBy({ top: adjustment, behavior: "auto" });
+      }
     };
+    // Allow disclosure measurements to settle before locating the destination.
+    if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(() => window.requestAnimationFrame(position));
+    else position();
+  }
+
+  function followEntityLink(event) {
+    const anchor = event.target.closest("a");
+    if (!anchor || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const href = anchor.getAttribute("href");
+    if (!href?.startsWith("#entity-")) return;
+    event.preventDefault();
+    const index = anchor.closest?.(".page-navigation");
+    if (index) index.open = false;
+    window.history.replaceState(null, "", href);
+    revealEntity(href.slice(1), true);
+  }
+
+  function initEntityNavigation() {
+    const indexes = [...document.querySelectorAll(".page-navigation")];
+    if (!indexes.length && !document.querySelector("[data-occupation-target], [data-section-target]")) return;
+    for (const index of indexes) index.addEventListener("click", followEntityLink);
     const fromHash = () => {
       let id;
-      try { id = decodeURIComponent(window.location?.hash.slice(1) ?? ""); } catch { return; }
-      if (id.startsWith("entity-")) reveal(id, false);
+      try { id = decodeURIComponent(window.location?.hash?.slice(1) ?? ""); } catch { return; }
+      if (id.startsWith("entity-")) revealEntity(id, false);
     };
-    for (const search of searches) {
+    window.addEventListener("hashchange", fromHash);
+    // Native fragment/history restoration can happen after deferred scripts run.
+    window.addEventListener("pageshow", fromHash);
+    fromHash();
+  }
+
+  function initOccupationSearch() {
+    const normalize = text => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+    for (const search of document.querySelectorAll(".occupation-search")) {
       const input = search.querySelector(".occupation-search-input");
       const results = search.querySelector(".occupation-search-results");
       const status = search.querySelector(".occupation-search-status");
-      if (!input || !results || !status) continue;
-      const entries = [...results.querySelectorAll("li")].map(row => ({ row, text: normalize(row.dataset.searchText) }));
-      input.addEventListener("input", () => {
+      const filter = search.querySelector(".occupation-search-filter");
+      const clear = search.querySelector(".occupation-search-clear");
+      const index = search.querySelector(".occupation-search-index");
+      if (!input || !results || !status || !index) continue;
+      const global = search.dataset.searchGlobal === "true";
+      const entries = [...index.content.querySelectorAll("li")].map(row => ({
+        row, text: normalize([row.querySelector("a").textContent, row.querySelector(".search-context").textContent, row.querySelector(".search-locations")?.textContent ?? "", row.dataset.searchAliases ?? ""].join(" ")),
+        recorded: row.dataset.recorded === "true", contest: row.dataset.contest,
+      }));
+      const update = () => {
         const tokens = normalize(input.value.trim()).split(/\s+/).filter(Boolean);
-        let count = 0;
-        for (const { row, text } of entries) {
-          row.hidden = !tokens.length || !tokens.every(token => text.includes(token));
-          if (!row.hidden) count++;
+        const group = filter?.value ?? "all";
+        const active = tokens.length > 0 || group !== "all";
+        const matches = [];
+        for (const { row, text, recorded, contest } of entries) {
+          const inGroup = group === "all" || (global ? contest === group : group === "recorded" ? recorded : !recorded);
+          row.hidden = !active || !inGroup || !tokens.every(token => text.includes(token));
+          if (!row.hidden) matches.push(row);
         }
-        results.hidden = !count;
-        status.textContent = !tokens.length ? "Digite parte do nome para localizar o cargo nos grupos abaixo."
-          : count ? `${count} ${count === 1 ? "cargo/especialidade encontrado" : "cargos/especialidades encontrados"}. Selecione para abrir o grupo correspondente.`
-          : "Nenhum cargo ou especialidade encontrado.";
+        // The catalogue stays inert until needed; retain only matching rows in the live DOM.
+        results.replaceChildren(...matches);
+        results.hidden = !matches.length;
+        if (clear) clear.hidden = !active;
+        status.textContent = !active ? global ? "Digite parte do nome ou escolha um concurso para iniciar a busca." : "Digite parte do nome ou escolha um grupo de registros para localizar o cargo."
+          : matches.length ? `${matches.length} ${global ? matches.length === 1 ? "resultado encontrado" : "resultados encontrados" : matches.length === 1 ? "cargo/especialidade encontrado" : "cargos/especialidades encontrados"}. Selecione para ${global ? "abrir o acompanhamento" : "abrir o grupo correspondente"}.`
+          : `${global ? "Nenhum resultado encontrado" : "Nenhum cargo ou especialidade encontrado"}${group === "all" ? ". Tente parte do nome, sem restringir os termos." : " no filtro selecionado. Limpe a busca e os filtros para tentar novamente."}`;
+      };
+      input.addEventListener("input", update);
+      filter?.addEventListener("change", update);
+      clear?.addEventListener("click", () => {
+        input.value = "";
+        if (filter) filter.value = "all";
+        update();
+        input.focus();
       });
-      results.addEventListener("click", event => {
-        const anchor = event.target.closest("a");
-        if (!anchor || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-        const href = anchor.getAttribute("href");
-        if (!href?.startsWith("#entity-")) return;
-        event.preventDefault();
-        window.history.replaceState(null, "", href);
-        reveal(href.slice(1), true);
-      });
+      results.addEventListener("click", followEntityLink);
       search.hidden = false;
+      update();
+      window.addEventListener("pageshow", () => {
+        if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(update);
+        else update();
+      });
     }
-    window.addEventListener("hashchange", fromHash);
-    fromHash();
   }
 
   function initChecklists() {
@@ -268,7 +320,7 @@
     }
   }
 
-  // A contribution belongs to its case, never to the home page.
+  // The shared site's contribution is offered only on the home page.
   function initPix() {
     for (const button of document.querySelectorAll(".pix-copy")) {
       const container = button.closest(".contribution");
@@ -295,6 +347,7 @@
   initFontSize(updateTop);
   initReadingNavigation(updateTop);
   initOccupationSearch();
+  initEntityNavigation();
   initChecklists();
   initPix();
 })();
