@@ -27,6 +27,10 @@
     ?? settings.pages.find(item => item.path === "/404.html" && item.id === slot.dataset?.eavVisits);
   if (!counter) return;
   const contest = counter.id; // Stable v2 API/storage field, including non-contest pages.
+  // Global pages are counted, but their total is never rendered. The registry
+  // check also protects older markup that omitted the explicit silent flag.
+  const showTotal = settings.contests.some(item => item.id === contest) && !slot.hasAttribute("data-eav-visits-silent");
+  if (!showTotal) slot.hidden = true;
   const endpoint = settings.counterEndpoint;
   const TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -144,6 +148,7 @@
       if (!response.ok) return;
       const result = await response.json();
       if (result?.contest !== contest || !Number.isSafeInteger(result.visits) || result.visits < 0) return;
+      if (!showTotal) return;
       const total = result.visits.toLocaleString("pt-BR");
       // Older cached EMGEPRON HTML has a hidden, empty slot without its own ID.
       slot.textContent = slot.dataset?.eavVisits ? total : " · Visitas estimadas: " + total;
