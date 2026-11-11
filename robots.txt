@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eav.arguskepheus.com.br/sitemap.xml
