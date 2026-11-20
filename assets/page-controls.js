@@ -265,6 +265,11 @@
       });
       results.addEventListener("click", followEntityLink);
       search.hidden = false;
+      if (!global) {
+        for (const navigationItem of document.querySelectorAll(".page-navigation [data-search-navigation]")) {
+          navigationItem.hidden = false;
+        }
+      }
       update();
       window.addEventListener("pageshow", () => {
         if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(update);
